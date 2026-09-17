@@ -1,0 +1,151 @@
+import csv
+import os
+from datetime import datetime
+
+
+FILE_NAME = "expenses.csv"
+
+
+def create_file():
+    if not os.path.exists(FILE_NAME):
+        with open(FILE_NAME, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Category", "Description", "Amount"])
+
+
+def add_expense():
+    print("\n===== ADD EXPENSE =====")
+
+    category = input("Category: ")
+    description = input("Description: ")
+
+    try:
+        amount = float(input("Amount: $"))
+
+        if amount <= 0:
+            print("Amount must be greater than $0.")
+            return
+
+    except ValueError:
+        print("Please enter a valid amount.")
+        return
+
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(FILE_NAME, "a", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([date, category, description, amount])
+
+    print("Expense added successfully.")
+
+
+def view_expenses():
+    print("\n===== EXPENSE HISTORY =====")
+
+    with open(FILE_NAME, "r") as file:
+        reader = csv.reader(file)
+
+        next(reader)
+
+        expenses = list(reader)
+
+        if not expenses:
+            print("No expenses yet.")
+            return
+
+        for number, expense in enumerate(expenses, start=1):
+            date = expense[0]
+            category = expense[1]
+            description = expense[2]
+            amount = float(expense[3])
+
+            print(
+                f"{number}. {date} | "
+                f"{category} | "
+                f"{description} | "
+                f"${amount:.2f}"
+            )
+
+
+def total_expenses():
+    total = 0
+
+    with open(FILE_NAME, "r") as file:
+        reader = csv.reader(file)
+
+        next(reader)
+
+        for expense in reader:
+            total += float(expense[3])
+
+    print(f"\nTotal expenses: ${total:.2f}")
+
+
+def category_summary():
+    categories = {}
+
+    with open(FILE_NAME, "r") as file:
+        reader = csv.reader(file)
+
+        next(reader)
+
+        for expense in reader:
+            category = expense[1]
+            amount = float(expense[3])
+
+            if category in categories:
+                categories[category] += amount
+            else:
+                categories[category] = amount
+
+    print("\n===== EXPENSES BY CATEGORY =====")
+
+    if not categories:
+        print("No expenses yet.")
+        return
+
+    for category, amount in categories.items():
+        print(f"{category}: ${amount:.2f}")
+
+
+def show_menu():
+    print("\n===== EXPENSE TRACKER =====")
+    print("1. Add Expense")
+    print("2. View Expenses")
+    print("3. View Total Expenses")
+    print("4. View Expenses by Category")
+    print("5. Exit")
+
+
+create_file()
+
+
+while True:
+    show_menu()
+
+    try:
+        choice = int(input("\nChoose an option (1-5): "))
+
+    except ValueError:
+        print("Please enter a number between 1 and 5.")
+        continue
+
+    if choice == 1:
+        add_expense()
+
+    elif choice == 2:
+        view_expenses()
+
+    elif choice == 3:
+        total_expenses()
+
+    elif choice == 4:
+        category_summary()
+
+    elif choice == 5:
+        print("\nThank you for using Expense Tracker.")
+        print("Goodbye!")
+        break
+
+    else:
+        print("Please choose a number between 1 and 5.")
